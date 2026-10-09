@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { supabase } from './lib/supabase'
 import ExcelJS from 'exceljs'
 import {
   Activity, ArrowDownToLine, ArrowLeft, ArrowRight, BarChart3, Building2, CalendarDays,
@@ -18,9 +18,6 @@ type Visit = {
 }
 type Page = 'Dashboard' | 'Add Visit' | 'Visit Reports' | 'Export Reports' | 'Admin Panel'
 const reasons = ['Customer Meeting','Product Demonstration','Sales Follow-up','Technical Discussion','Quotation Follow-up','Tender Discussion','Customer Complaint','Delivery or Installation','Other']
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
-const supabase: SupabaseClient | null = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null
 const today = () => new Date().toLocaleDateString('en-CA')
 const prettyDate = (v: string) => v ? new Date(v + (v.length === 10 ? 'T12:00:00' : '')).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'
 const duration = (a: string, b: string) => {

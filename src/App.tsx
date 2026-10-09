@@ -121,7 +121,7 @@ export default function App() {
     if(r==='Custom Date Range') return {from:fromDate,to:toDate}
     const a=new Date(d.getFullYear(),d.getMonth(),1);return {from:iso(a),to:today()}
   }
-  const periodVisits = useMemo(()=>{const b=dateBounds(range);return visits.filter(v=>(!b.from||v.visit_date>=b.from)&&(!b.to||v.visit_date<=b.to)&&(profile?.role==='Admin'||v.user_id===profile?.id))},[visits,range,fromDate,toDate,profile])
+  const periodVisits = useMemo(()=>{const b=dateBounds(range);const q=query.toLowerCase();return visits.filter(v=>(!b.from||v.visit_date>=b.from)&&(!b.to||v.visit_date<=b.to)&&(profile?.role==='Admin'||v.user_id===profile?.id)&&(!q||v.customer_name.toLowerCase().includes(q)||v.contact_number.toLowerCase().includes(q)||(v.remarks||'').toLowerCase().includes(q))&&(cityFilter==='All cities'||v.city===cityFilter)&&(reasonFilter==='All reasons'||v.reason===reasonFilter)&&(userFilter==='All users'||v.user_id===userFilter))},[visits,range,fromDate,toDate,profile,query,cityFilter,reasonFilter,userFilter])
   const monthVisits=visits.filter(v=>v.visit_date.slice(0,7)===today().slice(0,7))
   const weekStart=(()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);return d.toLocaleDateString('en-CA')})()
   const weekVisits=visits.filter(v=>v.visit_date>=weekStart&&v.visit_date<=today())

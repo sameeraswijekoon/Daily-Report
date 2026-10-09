@@ -59,11 +59,11 @@ The function verifies the caller's current authenticated session and active Admi
 
 ### 5. Configure frontend environment variables
 
-Create a local `.env.local` (never commit it) using the values from Supabase **Project Settings → API**:
+Copy `.env.example` to `.env.local` (never commit `.env.local`) and use the values from Supabase **Project Settings → API**. This is a Vite/React single-page application, so its frontend variables use the `VITE_` prefix (not Next.js `NEXT_PUBLIC_`):
 
 ```dotenv
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 ```
 
 Only the public anon/publishable key belongs in the frontend. RLS is the security boundary.
@@ -86,7 +86,7 @@ npm run preview
 
 In GitHub, open **Settings → Pages** and select **GitHub Actions** as the build source. Add these repository Actions variables (Settings → Secrets and variables → Actions → Variables):
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
 The included workflow builds and publishes the Vite app on pushes to `main`. If the repository uses a different branch, update the workflow trigger.
 
@@ -102,4 +102,8 @@ The included workflow builds and publishes the Vite app on pushes to `main`. If 
 
 ## Technology
 
-React, TypeScript, Vite, Supabase Auth/PostgreSQL/RLS/Edge Functions, Lucide React, ExcelJS.
+React, TypeScript, Vite, `@supabase/supabase-js`, Supabase Auth/PostgreSQL/RLS/Edge Functions, Lucide React, ExcelJS.
+
+### Why this project does not use `@supabase/ssr`
+
+The provided `@supabase/ssr` examples (`next/headers`, `page.tsx`, and Next.js middleware) are for Next.js server-side rendering. This repository uses Vite and React, with no Next.js server or middleware. It therefore uses `@supabase/supabase-js` directly in a shared browser client (`src/lib/supabase.ts`). Do not add Next.js-specific server/middleware files unless the application is intentionally migrated to Next.js. The existing `@supabase/supabase-js` dependency is already declared in `package.json`, so it does not need to be installed again.

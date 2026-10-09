@@ -162,7 +162,7 @@ using (id = (select auth.uid()) or (select public.is_active_admin()));
 
 drop policy if exists "Users read own visits admins read all" on public.visit_reports;
 create policy "Users read own visits admins read all" on public.visit_reports for select to authenticated
-using (user_id = (select auth.uid()) or (select public.is_active_admin()));
+using ((user_id = (select auth.uid()) and exists(select 1 from public.profiles p where p.id=auth.uid() and p.active)) or (select public.is_active_admin()));
 
 drop policy if exists "Users insert own visits" on public.visit_reports;
 create policy "Users insert own visits" on public.visit_reports for insert to authenticated
@@ -170,8 +170,8 @@ with check (user_id = (select auth.uid()) and exists(select 1 from public.profil
 
 drop policy if exists "Users update own visits admins update all" on public.visit_reports;
 create policy "Users update own visits admins update all" on public.visit_reports for update to authenticated
-using (user_id = (select auth.uid()) or (select public.is_active_admin()))
-with check (user_id = (select auth.uid()) or (select public.is_active_admin()));
+using ((user_id = (select auth.uid()) and exists(select 1 from public.profiles p where p.id=auth.uid() and p.active)) or (select public.is_active_admin()))
+with check ((user_id = (select auth.uid()) and exists(select 1 from public.profiles p where p.id=auth.uid() and p.active)) or (select public.is_active_admin()));
 
 drop policy if exists "Users delete own visits admins delete all" on public.visit_reports;
 create policy "Users delete own visits admins delete all" on public.visit_reports for delete to authenticated

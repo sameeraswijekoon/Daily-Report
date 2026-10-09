@@ -148,3 +148,31 @@ grant select, insert, update, delete on public.visit_reports to authenticated;
 -- update public.profiles set role='Admin', active=true where lower(username)='admin';
 -- Keep email confirmation disabled for this internal username/password login setup,
 -- or mark provisioned users as confirmed in the Edge Function.
+
+-- SECURITY DEFINER helper avoids recursive RLS lookups on profiles.
+create or replace function public.is_active_admin()
+returns boolean language sql stable security definer set search_path = ''
+as $$ select exists(select 1 from public.profiles where id=auth.uid() and role='Admin' and active); $$;
+revoke all on function public.is_active_admin() from public;
+grant execute on function public.is_active_admin() to authenticated;
+
+drop policy if exists "Read own profile or admin profiles" on public.profiles;
+create policy "Read own profile or admin profiles" on public.profiles for select to authenticated
+using (id = (select auth.uid()) or (select public.is_active_admin()));
+
+drop policy if exists "Users read own visits admins read all" on public.visit_reports;
+create policy "Users read own visits admins read all" on public.visit_reports for select to authenticated
+using (user_id = (select auth.uid()) or (select public.is_active_admin()));
+
+drop policy if exists "Users insert own visits" on public.visit_reports;
+create policy "Users insert own visits" on public.visit_reports for insert to authenticated
+with check (user_id = (select auth.uid()) and exists(select 1 from public.profiles p where p.id=auth.uid() and p.active));
+
+drop policy if exists "Users update own visits admins update all" on public.visit_reports;
+create policy "Users update own visits admins update all" on public.visit_reports for update to authenticated
+using (user_id = (select auth.uid()) or (select public.is_active_admin()))
+with check (user_id = (select auth.uid()) or (select public.is_active_admin()));
+
+drop policy if exists "Users delete own visits admins delete all" on public.visit_reports;
+create policy "Users delete own visits admins delete all" on public.visit_reports for delete to authenticated
+using (user_id = (select auth.uid()) or (select public.is_active_admin()));

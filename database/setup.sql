@@ -111,6 +111,10 @@ begin
    raise exception 'Administrator access required';
  end if;
  if p_user_id = auth.uid() and not p_active then raise exception 'You cannot deactivate your own account'; end if;
+ if not p_active and exists(select 1 from public.profiles where id=p_user_id and role='Admin')
+   and (select count(*) from public.profiles where role='Admin' and active) <= 1 then
+   raise exception 'The last active administrator cannot be deactivated';
+ end if;
  update public.profiles set active=p_active where id=p_user_id;
  if not found then raise exception 'User not found'; end if;
 end; $$;
